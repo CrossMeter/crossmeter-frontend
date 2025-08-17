@@ -348,8 +348,8 @@ export default function WebhooksPage() {
                 <li>• Webhooks are automatically retried up to 3 times with exponential backoff</li>
                 <li>• Delivery timeout is set to 30 seconds per attempt</li>
                 <li>• Events are triggered for payment_intent state changes and subscription renewals</li>
-                <li>• Use "Process Pending" to manually retry failed deliveries</li>
-                <li>• "Cleanup Old" removes successfully delivered events older than 7 days</li>
+                <li>• Use &quot;Process Pending&quot; to manually retry failed deliveries</li>
+                <li>• &quot;Cleanup Old&quot; removes successfully delivered events older than 7 days</li>
               </ul>
             </div>
           </div>

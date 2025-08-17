@@ -25,7 +25,7 @@ export default function GatewayTestPage() {
             PIaaS Payment Gateway Demo
           </h1>
           <p className="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-            Test the payment gateway by entering a vendor's API key. This demonstrates how clients can integrate 
+            Test the payment gateway by entering a vendor&apos;s API key. This demonstrates how clients can integrate 
             PIaaS payment processing into their applications.
           </p>
         </div>
@@ -39,8 +39,8 @@ export default function GatewayTestPage() {
                   Enter API Key
                 </CardTitle>
                 <CardDescription>
-                  Enter a vendor's API key to load their payment gateway. You can find your API key 
-                  in the vendor dashboard under the "API Key" tab.
+                  Enter a vendor&apos;s API key to load their payment gateway. You can find your API key 
+                  in the vendor dashboard under the &quot;API Key&quot; tab.
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -69,7 +69,7 @@ export default function GatewayTestPage() {
                   <ol className="text-sm text-blue-700 dark:text-blue-300 space-y-1 list-decimal list-inside">
                     <li>Sign up as a vendor or log into your vendor account</li>
                     <li>Go to your vendor dashboard</li>
-                    <li>Click on the "API Key" tab</li>
+                    <li>Click on the &quot;API Key&quot; tab</li>
                     <li>Copy your API key and paste it here</li>
                   </ol>
                 </div>

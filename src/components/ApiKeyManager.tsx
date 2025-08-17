@@ -62,7 +62,7 @@ export function ApiKeyManager() {
         </CardTitle>
         <CardDescription>
           Use this API key to integrate PIaaS payment gateway into your applications.
-          Keep it secure and don't expose it in client-side code.
+          Keep it secure and don&apos;t expose it in client-side code.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">

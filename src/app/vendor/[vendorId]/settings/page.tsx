@@ -123,7 +123,7 @@ export default function VendorSettingsPage() {
 
       paymentForm.reset({
         wallet_address: vendorData.wallet_address,
-        preferred_destination_chain: vendorData.preferred_destination_chain.toString(),
+        preferred_destination_chain: vendorData.preferred_destination_chain?.toString(),
         enabled_source_chains: vendorData.enabled_source_chains.map(id => id.toString()),
       });
 
@@ -417,10 +417,10 @@ export default function VendorSettingsPage() {
                           </FormControl>
                           <SelectContent>
                             {chains.map((chain) => (
-                              <SelectItem key={chain.id} value={chain.id.toString()}>
+                              <SelectItem key={chain.id} value={chain.id?.toString() || ""}>
                                 <div className="flex items-center gap-2">
                                   <div className={`w-2 h-2 rounded-full ${
-                                    [1, 8453, 10, 42161, 137].includes(chain.id) 
+                                    [1, 8453, 10, 42161, 137].includes(chain.id || 0) 
                                       ? "bg-green-500" 
                                       : "bg-yellow-500"
                                   }`} />
@@ -461,13 +461,13 @@ export default function VendorSettingsPage() {
                                   >
                                     <FormControl>
                                       <Checkbox
-                                        checked={field.value?.includes(chain.id.toString())}
+                                        checked={field.value?.includes(chain.id?.toString() || "")}
                                         onCheckedChange={(checked) => {
                                           return checked
-                                            ? field.onChange([...field.value, chain.id.toString()])
+                                            ? field.onChange([...field.value, chain.id?.toString() || ""])
                                             : field.onChange(
                                                 field.value?.filter(
-                                                  (value) => value !== chain.id.toString()
+                                                  (value) => value !== chain.id?.toString()
                                                 )
                                               )
                                         }}
@@ -476,7 +476,7 @@ export default function VendorSettingsPage() {
                                     <div className="space-y-1 leading-none">
                                       <FormLabel className="flex items-center gap-2 font-normal">
                                         <div className={`w-2 h-2 rounded-full ${
-                                          [1, 8453, 10, 42161, 137].includes(chain.id) 
+                                          [1, 8453, 10, 42161, 137].includes(chain.id || 0) 
                                             ? "bg-green-500" 
                                             : "bg-yellow-500"
                                         }`} />
@@ -542,7 +542,7 @@ export default function VendorSettingsPage() {
                           <Input placeholder="https://yourapi.com/webhooks/piaas" {...field} />
                         </FormControl>
                         <FormDescription>
-                          We'll send POST requests to this URL when payment events occur. Leave empty to disable webhooks.
+                          We&apos;ll send POST requests to this URL when payment events occur. Leave empty to disable webhooks.
                         </FormDescription>
                         <FormMessage />
                       </FormItem>

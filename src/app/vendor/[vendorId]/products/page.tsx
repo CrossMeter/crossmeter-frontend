@@ -246,7 +246,7 @@ export default function ProductsPage() {
                 />
               </FormControl>
               <FormDescription>
-                Help customers understand what they're purchasing
+                Help customers understand what they&apos;re purchasing
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -473,17 +473,17 @@ export default function ProductsPage() {
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
-                      {getPricingIcon(product.pricing_model)}
-                      {getPricingModelBadge(product.pricing_model)}
+                      {getPricingIcon(product.pricing_model || 'one_off')}
+                      {getPricingModelBadge(product.pricing_model || 'one_off')}
                     </div>
                   </TableCell>
                   <TableCell>
                     <div className="space-y-1">
                       <p className="font-medium">
-                        ${(product.price_cents / 100).toFixed(2)}
+                        ${(product.price_cents || 0 / 100).toFixed(2)}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        {formatPrice(product.price_cents, product.pricing_model, product.billing_interval_days)}
+                        {formatPrice(product.price_cents || 0, product.pricing_model || 'one_off', product.billing_interval_days || 30)}
                       </p>
                     </div>
                   </TableCell>
@@ -513,7 +513,7 @@ export default function ProductsPage() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => handleDelete(product.id)}
+                        onClick={() => handleDelete(product.id || '')}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
