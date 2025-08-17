@@ -106,6 +106,7 @@ const normalizePaymentIntent = (intent: any): PaymentIntent => ({
   router_calldata: intent.router?.calldata,
   source_tx_hash: intent.tx_hashes?.source,
   destination_tx_hash: intent.tx_hashes?.destination,
+  transaction_hash: intent.transaction_hash,
 });
 
 const normalizeSubscription = (subscription: any): Subscription => ({

@@ -67,7 +67,7 @@ export interface Customer {
   updated_at: string;
 }
 
-export type PaymentIntentStatus = 'created' | 'awaiting_user_tx' | 'submitted' | 'settled';
+export type PaymentIntentStatus = 'created' | 'settled' | 'failed';
 
 export interface PaymentIntent {
   intent_id: string; // Backend uses intent_id as the field name
@@ -78,6 +78,7 @@ export interface PaymentIntent {
   src_chain_id: number;
   dest_chain_id: number;
   status: PaymentIntentStatus;
+  transaction_hash?: string; // Direct transaction hash from the database
   router?: {
     address: string;
     chain_id: number;

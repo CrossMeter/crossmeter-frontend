@@ -73,9 +73,8 @@ export default function VendorDashboardPage() {
   const getStatusBadge = (status: string) => {
     const variants: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
       created: "outline",
-      awaiting_user_tx: "secondary",
-      submitted: "default",
       settled: "default",
+      failed: "destructive",
       active: "default",
       paused: "secondary",
       cancelled: "destructive",
@@ -108,7 +107,7 @@ export default function VendorDashboardPage() {
     totalPayments: paymentIntents.length,
     totalRevenue: paymentIntents
       .filter(p => p.status === "settled")
-      .reduce((sum, p) => sum + p.amount_cents, 0) / 100,
+      .reduce((sum, p) => sum + (p.amount_cents || 0), 0) / 100,
     activeSubscriptions: subscriptions.filter(s => s.status === "active").length,
   };
 
@@ -334,11 +333,11 @@ export default function VendorDashboardPage() {
                         </div>
                       </TableCell>
                       <TableCell>
-                        {getPricingModelBadge(product.pricing_model)}
+                        {getPricingModelBadge(product.pricing_model || 'one_off')}
                       </TableCell>
                       <TableCell>
                         <div>
-                          <p>${(product.price_cents / 100).toFixed(2)}</p>
+                          <p>${((product.price_cents || 0) / 100).toFixed(2)}</p>
                           {product.pricing_model === 'monthly' && (
                             <p className="text-xs text-muted-foreground">
                               every {product.billing_interval_days} days
@@ -399,7 +398,7 @@ export default function VendorDashboardPage() {
                     <TableHead>Payment ID</TableHead>
                     <TableHead>Amount</TableHead>
                     <TableHead>Status</TableHead>
-                    <TableHead>Customer</TableHead>
+                    <TableHead>Transaction Hash</TableHead>
                     <TableHead>Created</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -407,16 +406,20 @@ export default function VendorDashboardPage() {
                   {paymentIntents.slice(0, 10).map((payment) => (
                     <TableRow key={payment.id}>
                       <TableCell className="font-mono text-xs">
-                        {payment.id.substring(0, 12)}...
+                        {payment.id?.substring(0, 12)}...
                       </TableCell>
                       <TableCell>
-                        ${(payment.amount_cents / 100).toFixed(2)}
+                        ${((payment.amount_cents || 0) / 100).toFixed(2)}
                       </TableCell>
                       <TableCell>
                         {getStatusBadge(payment.status)}
                       </TableCell>
-                      <TableCell className="text-sm">
-                        {payment.customer_id}
+                      <TableCell className="font-mono text-xs">
+                        {payment.status === 'created' ? '-' : 
+                          payment.transaction_hash ? 
+                            payment.transaction_hash : 
+                            'N/A'
+                        }
                       </TableCell>
                       <TableCell>
                         {formatDistance(new Date(payment.created_at), new Date(), { addSuffix: true })}
@@ -459,14 +462,14 @@ export default function VendorDashboardPage() {
                   {subscriptions.map((subscription) => (
                     <TableRow key={subscription.id}>
                       <TableCell className="font-mono text-xs">
-                        {subscription.id.substring(0, 12)}...
+                        {subscription.id?.substring(0, 12)}...
                       </TableCell>
                       <TableCell>{subscription.customer_id}</TableCell>
                       <TableCell>
                         {getStatusBadge(subscription.status)}
                       </TableCell>
                       <TableCell>
-                        {new Date(subscription.next_billing_date).toLocaleDateString()}
+                        {new Date(subscription.next_billing_date || '').toLocaleDateString()}
                       </TableCell>
                       <TableCell>
                         {formatDistance(new Date(subscription.created_at), new Date(), { addSuffix: true })}
