@@ -179,9 +179,9 @@ export default function ChainsPage() {
                 </SelectTrigger>
                 <SelectContent>
                   {chains.map((chain) => (
-                    <SelectItem key={chain.id} value={chain.id.toString()}>
+                    <SelectItem key={chain.id} value={chain.id?.toString() || ""  }>
                       <div className="flex items-center gap-2">
-                        {getChainTypeIcon(chain.id)}
+                        {getChainTypeIcon(chain.id || 0)}  
                         {chain.name} ({chain.id})
                       </div>
                     </SelectItem>
@@ -198,9 +198,9 @@ export default function ChainsPage() {
                 </SelectTrigger>
                 <SelectContent>
                   {chains.map((chain) => (
-                    <SelectItem key={chain.id} value={chain.id.toString()}>
+                    <SelectItem key={chain.id} value={chain.id?.toString() || ""}>
                       <div className="flex items-center gap-2">
-                        {getChainTypeIcon(chain.id)}
+                        {getChainTypeIcon(chain.id || 0)}
                         {chain.name} ({chain.id})
                       </div>
                     </SelectItem>
@@ -289,9 +289,9 @@ export default function ChainsPage() {
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
-                      {getChainTypeIcon(chain.id)}
+                        {getChainTypeIcon(chain.id || 0)}
                       <span className="text-sm">
-                        {[1, 8453, 10, 42161, 137].includes(chain.id) ? "Mainnet" : "Testnet"}
+                        {[1, 8453, 10, 42161, 137].includes(chain.id || 0) ? "Mainnet" : "Testnet"}
                       </span>
                     </div>
                   </TableCell>
@@ -309,10 +309,10 @@ export default function ChainsPage() {
                     )}
                   </TableCell>
                   <TableCell>
-                    {formatBridgeFee(chain.bridge_fee_basis_points)}
+                    {formatBridgeFee(chain.bridge_fee_basis_points || 0)}
                   </TableCell>
                   <TableCell>
-                    {formatGasLimit(chain.gas_limit)}
+                    {formatGasLimit(chain.gas_limit || 0)}
                   </TableCell>
                   <TableCell>
                     <Dialog>
@@ -370,7 +370,7 @@ export default function ChainsPage() {
                             <div>
                               <h4 className="font-medium">Bridge Fee</h4>
                               <p className="text-sm text-muted-foreground">
-                                {formatBridgeFee(chain.bridge_fee_basis_points)}
+                                {formatBridgeFee(chain.bridge_fee_basis_points || 0)}
                               </p>
                             </div>
                             <div>

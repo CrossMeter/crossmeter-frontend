@@ -23,7 +23,7 @@ export const MESSAGE_TRANSMITTER_ABI = [
       { name: "message", type: "bytes", internalType: "bytes" },
       { name: "attestation", type: "bytes", internalType: "bytes" }
     ],
-    outputs: [{ name: "success", type: "bool", internalType: "bool" }],
+    outputs: [],
     stateMutability: "nonpayable"
   }
 ] as const;

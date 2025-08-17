@@ -37,7 +37,7 @@ export default function CirclePaymentsPage() {
   
   // Wagmi hooks for blockchain interactions
   const { address, isConnected } = useAccount();
-  const { writeContract } = useWriteContract();
+  const { writeContractAsync } = useWriteContract();
   const { switchChain } = useSwitchChain();
   const [txHash, setTxHash] = useState<string | null>(null);
   const { data: receipt } = useWaitForTransactionReceipt({
@@ -98,7 +98,7 @@ export default function CirclePaymentsPage() {
       });
 
       // 2. Get destination chain config
-      const destChain = getChainConfig('avalanche');
+      const destChain = getChainConfig(attestation.destinationChain);
       if (!destChain) {
         throw new Error(`Unsupported destination chain: ${attestation.destinationChain}`);
       }
@@ -119,33 +119,29 @@ export default function CirclePaymentsPage() {
         attestation: attestation.attestation
       });
 
-      const hash = await writeContract({
+      const hash = await writeContractAsync({
         address: destChain.messageTransmitterAddress as `0x${string}`,
         abi: MESSAGE_TRANSMITTER_ABI,
         functionName: 'receiveMessage',
         args: [attestation.originalMessage as `0x${string}`, attestation.attestation as `0x${string}`]
       });
 
-      // 5. Wait for confirmation
-      console.log('Waiting for transaction confirmation:', hash);
-      addToast({
-        title: "Transaction submitted",
-        description: "Waiting for confirmation...",
-        variant: "default"
-      });
-      setTxHash(hash);
-      
-      // Wait for receipt to be available
-      let attempts = 0;
-      while (attempts < 30) { // Wait up to 30 seconds
-        if (receipt) break;
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        attempts++;
+      if (!hash) {
+        throw new Error('Transaction failed: No transaction hash returned');
       }
 
-      if (!receipt) {
-        throw new Error('Transaction confirmation timeout');
-      }
+      // 5. Transaction submitted - route to explorer
+      console.log('Transaction submitted:', hash);
+      const explorerUrl = `${destChain.blockExplorer}/tx/${hash}`;
+      
+      addToast({
+        title: "Transaction submitted successfully!",
+        description: `View on explorer: ${explorerUrl}`,
+        variant: "success"
+      });
+      
+      // Open explorer in new tab
+      window.open(explorerUrl, '_blank');
 
       // 6. Call completion API
       await circleApi.completeMint({
@@ -271,14 +267,6 @@ export default function CirclePaymentsPage() {
                   <p className="text-sm font-mono">{address.substring(0, 20)}...</p>
                 </div>
               </div>
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={() => primaryWallet?.disconnect()}
-                className="text-green-700 border-green-300 hover:bg-green-100"
-              >
-                Disconnect
-              </Button>
             </div>
           ) : (
             <div className="flex items-center justify-between">
