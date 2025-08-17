@@ -281,9 +281,7 @@ export default function VendorDashboardPage() {
         <TabsList>
           <TabsTrigger value="products">Products</TabsTrigger>
           <TabsTrigger value="payments">Recent Payments</TabsTrigger>
-          <TabsTrigger value="subscriptions">Subscriptions</TabsTrigger>
           <TabsTrigger value="api-key">API Key</TabsTrigger>
-          <TabsTrigger value="mock-data">Test Data</TabsTrigger>
         </TabsList>
         
         <TabsContent value="products" className="space-y-4">

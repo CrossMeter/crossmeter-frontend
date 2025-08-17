@@ -28,19 +28,9 @@ const navigation = [
     icon: LayoutDashboard,
   },
   {
-    name: "Payment Gateway",
-    href: "/gateway",
-    icon: CreditCard,
-  },
-  {
     name: "Networks",
     href: "/chains",
     icon: Network,
-  },
-  {
-    name: "Webhooks",
-    href: "/webhooks",
-    icon: Webhook,
   },
 ];
 
