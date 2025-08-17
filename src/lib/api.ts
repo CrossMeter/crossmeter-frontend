@@ -542,5 +542,69 @@ export const clientApi = {
   },
 };
 
+// Vendor Status Check API
+export const vendorStatusApi = {
+  checkByWallet: async (walletAddress: string): Promise<{ exists: boolean; vendor?: Vendor; isComplete: boolean }> => {
+    try {
+      const response = await api.get<any>(`/v1/vendors/wallet/${walletAddress}`);
+      const vendor = normalizeVendor(response.data);
+      
+      // Check if vendor has all required fields
+      const isComplete = !!(vendor.name && vendor.email && vendor.wallet_address);
+      
+      return {
+        exists: true,
+        vendor,
+        isComplete
+      };
+    } catch (error: any) {
+      if (error.response?.status === 404) {
+        return {
+          exists: false,
+          isComplete: false
+        };
+      }
+      throw error;
+    }
+  },
+  
+  createWithWallet: async (data: Omit<CreateVendorRequest, 'password'> & { wallet_address: string }): Promise<AuthResponse> => {
+    const backendData = {
+      name: data.name,
+      email: data.email,
+      webhook_url: data.webhook_url,
+      preferred_dest_chain_id: data.preferred_destination_chain,
+      enabled_source_chains: data.enabled_source_chains,
+      wallet_address: data.wallet_address,
+      metadata: {
+        description: data.description,
+        website: data.website,
+      },
+    };
+    
+    const response = await api.post<AuthResponse>('/v1/vendors/create-with-wallet', backendData);
+    setAuthToken(response.data.access_token);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('vendor_id', response.data.vendor_id);
+    }
+    return response.data;
+  },
+  
+  createUserOnWalletConnect: async (walletAddress: string): Promise<{ success: boolean; user_id?: string }> => {
+    try {
+      const response = await api.post('/v1/users/create-on-wallet-connect', {
+        wallet_address: walletAddress
+      });
+      return { success: true, user_id: response.data.user_id };
+    } catch (error: any) {
+      // If user already exists, that's fine
+      if (error.response?.status === 409) {
+        return { success: true };
+      }
+      throw error;
+    }
+  }
+};
+
 export { getAuthToken, setAuthToken, removeAuthToken };
 export default api;

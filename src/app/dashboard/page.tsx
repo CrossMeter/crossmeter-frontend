@@ -6,7 +6,10 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useIsLoggedIn, useDynamicContext, useUserWallets } from '@dynamic-labs/sdk-react-core';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Wallet, ArrowRight, CreditCard, BarChart3, Copy, ExternalLink } from "lucide-react";
+import { Wallet, ArrowRight, CreditCard, BarChart3, Copy, ExternalLink, Loader2 } from "lucide-react";
+import { vendorStatusApi } from "@/lib/api";
+import { VendorRegistrationForm } from "@/components/VendorRegistrationForm";
+import { useWalletUserCreation } from "@/hooks/useWalletUserCreation";
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -20,19 +23,65 @@ export default function DashboardPage() {
 
   const [signedMessage, setSignedMessage] = useState<string>('');
   const [isSigningMessage, setIsSigningMessage] = useState(false);
+  
+  // Vendor status state
+  const [vendorStatus, setVendorStatus] = useState<{
+    loading: boolean;
+    exists: boolean;
+    vendor?: any;
+    isComplete: boolean;
+  }>({
+    loading: false,
+    exists: false,
+    isComplete: false
+  });
+  
+  const [showRegistrationForm, setShowRegistrationForm] = useState(false);
 
-  // Handle traditional auth redirects
+  // Handle user creation when wallet connects
+  useWalletUserCreation();
+
+  // Check vendor status when wallet is connected
+  useEffect(() => {
+    const checkVendorStatus = async () => {
+      if (isDynamicLoggedIn && primaryWallet?.address && !vendorStatus.loading) {
+        setVendorStatus(prev => ({ ...prev, loading: true }));
+        
+        try {
+          const status = await vendorStatusApi.checkByWallet(primaryWallet.address);
+          setVendorStatus({
+            loading: false,
+            exists: status.exists,
+            vendor: status.vendor,
+            isComplete: status.isComplete
+          });
+          
+          // If user exists but no vendor profile, show registration form
+          if (status.exists && !status.isComplete) {
+            setShowRegistrationForm(true);
+          }
+        } catch (error) {
+          console.error('Error checking vendor status:', error);
+          setVendorStatus({
+            loading: false,
+            exists: false,
+            isComplete: false
+          });
+        }
+      }
+    };
+
+    checkVendorStatus();
+  }, [isDynamicLoggedIn, primaryWallet?.address, vendorStatus.loading]);
+
+  // Handle authentication redirects
   useEffect(() => {
     if (!authLoading) {
-      if (!isAuthenticated && !isDynamicLoggedIn) {
+      if (!isDynamicLoggedIn) {
         router.push('/login');
-      } else if (vendor && isAuthenticated) {
-        // If both traditional auth and wallet are connected, redirect to vendor dashboard
-        const vendorId = vendor.id || vendor.vendor_id;
-        router.push(`/vendor/${vendorId}`);
       }
     }
-  }, [vendor, authLoading, isAuthenticated, isDynamicLoggedIn, router]);
+  }, [authLoading, isDynamicLoggedIn, router]);
 
   // Handle message signing
   const handleSignMessage = async () => {
@@ -63,20 +112,52 @@ export default function DashboardPage() {
     navigator.clipboard.writeText(text);
   };
 
+  // Handle vendor registration success
+  const handleVendorRegistrationSuccess = (vendorData: any) => {
+    setVendorStatus({
+      loading: false,
+      exists: true,
+      vendor: vendorData,
+      isComplete: true
+    });
+    setShowRegistrationForm(false);
+    
+    // Redirect to vendor dashboard
+    const vendorId = vendorData.vendor_id;
+    router.push(`/vendor/${vendorId}`);
+  };
+
   // Show loading state
-  if (authLoading) {
+  if (authLoading || vendorStatus.loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-300">Loading your dashboard...</p>
+          <p className="text-gray-600 dark:text-gray-300">
+            {authLoading ? "Loading your dashboard..." : "Checking vendor status..."}
+          </p>
         </div>
       </div>
     );
   }
 
-  // If user has wallet connected but no traditional auth, show wallet dashboard
-  if (isDynamicLoggedIn && !isAuthenticated) {
+  // Show vendor registration form if wallet connected but no vendor account
+  if (showRegistrationForm && primaryWallet?.address) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
+        <div className="container mx-auto px-4 py-8">
+          <VendorRegistrationForm
+            walletAddress={primaryWallet.address}
+            onSuccess={handleVendorRegistrationSuccess}
+            onCancel={() => setShowRegistrationForm(false)}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  // If user has wallet connected, show wallet dashboard
+  if (isDynamicLoggedIn) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
         {/* Header */}
@@ -175,15 +256,38 @@ export default function DashboardPage() {
                 <CardDescription>Get started with PIaaS services</CardDescription>
               </CardHeader>
               <CardContent className="space-y-3">
-                <Button 
-                  className="w-full justify-start" 
-                  variant="outline"
-                  onClick={() => router.push('/signup')}
-                >
-                  <CreditCard className="mr-2 h-4 w-4" />
-                  Become a Vendor
-                  <ArrowRight className="ml-auto h-4 w-4" />
-                </Button>
+                {!vendorStatus.exists ? (
+                  <Button 
+                    className="w-full justify-start" 
+                    onClick={() => setShowRegistrationForm(true)}
+                  >
+                    <CreditCard className="mr-2 h-4 w-4" />
+                    Create Vendor Account
+                    <ArrowRight className="ml-auto h-4 w-4" />
+                  </Button>
+                ) : !vendorStatus.isComplete ? (
+                  <Button 
+                    className="w-full justify-start" 
+                    onClick={() => setShowRegistrationForm(true)}
+                  >
+                    <Loader2 className="mr-2 h-4 w-4" />
+                    Complete Vendor Profile
+                    <ArrowRight className="ml-auto h-4 w-4" />
+                  </Button>
+                ) : (
+                  <Button 
+                    className="w-full justify-start" 
+                    variant="outline"
+                    onClick={() => {
+                      const vendorId = vendorStatus.vendor?.vendor_id;
+                      if (vendorId) router.push(`/vendor/${vendorId}`);
+                    }}
+                  >
+                    <CreditCard className="mr-2 h-4 w-4" />
+                    Go to Vendor Dashboard
+                    <ArrowRight className="ml-auto h-4 w-4" />
+                  </Button>
+                )}
                 <Button 
                   className="w-full justify-start" 
                   variant="outline"
@@ -192,14 +296,6 @@ export default function DashboardPage() {
                   <BarChart3 className="mr-2 h-4 w-4" />
                   Try Payment Gateway
                   <ExternalLink className="ml-auto h-4 w-4" />
-                </Button>
-                <Button 
-                  className="w-full justify-start" 
-                  variant="outline"
-                  onClick={() => router.push('/login')}
-                >
-                  <ArrowRight className="mr-2 h-4 w-4" />
-                  Login as Existing Vendor
                 </Button>
               </CardContent>
             </Card>
@@ -240,27 +336,35 @@ export default function DashboardPage() {
             </Card>
           </div>
 
-          {/* Connect Traditional Account CTA */}
-          <Card className="mt-6 bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
-            <CardHeader>
-              <CardTitle className="text-blue-900 dark:text-blue-100">
-                Connect Your Vendor Account
-              </CardTitle>
-              <CardDescription>
-                Link your wallet with a PIaaS vendor account to access full dashboard features
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex gap-3">
-                <Button onClick={() => router.push('/login')}>
-                  Login to Existing Account
-                </Button>
-                <Button variant="outline" onClick={() => router.push('/signup')}>
-                  Create Vendor Account
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+          {/* Vendor Status Information */}
+          {vendorStatus.exists && (
+            <Card className="mt-6 bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800">
+              <CardHeader>
+                <CardTitle className="text-green-900 dark:text-green-100">
+                  Vendor Account Found
+                </CardTitle>
+                <CardDescription>
+                  {vendorStatus.isComplete 
+                    ? "Your vendor account is complete and ready to use."
+                    : "Your vendor account needs additional information to be fully activated."
+                  }
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <p className="text-sm">
+                    <strong>Name:</strong> {vendorStatus.vendor?.name || 'Not set'}
+                  </p>
+                  <p className="text-sm">
+                    <strong>Email:</strong> {vendorStatus.vendor?.email || 'Not set'}
+                  </p>
+                  <p className="text-sm">
+                    <strong>Status:</strong> {vendorStatus.isComplete ? 'Complete' : 'Incomplete'}
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
       </div>
     );

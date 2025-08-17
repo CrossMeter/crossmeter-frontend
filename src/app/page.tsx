@@ -57,7 +57,7 @@ export default function Home() {
                 className="text-lg px-8"
                 onClick={() => setShowAuthFlow(true)}
               >
-                Connect Wallet to Start
+                Connect Wallet & Create Vendor Account
                 <Wallet className="ml-2 h-5 w-5" />
               </Button>
               <Link href="/gateway">

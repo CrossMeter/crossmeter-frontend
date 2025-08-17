@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
+import { useDynamicContext, useIsLoggedIn, useUserWallets } from '@dynamic-labs/sdk-react-core';
 import { useState, useEffect } from "react";
 import { 
   LayoutDashboard, 
@@ -13,7 +14,8 @@ import {
   Webhook,
   Home,
   LogOut,
-  User
+  User,
+  Wallet
 } from "lucide-react";
 
 const navigation = [
@@ -49,21 +51,33 @@ export function Navigation() {
   const { vendor, isAuthenticated, logout } = useAuth();
   const [mounted, setMounted] = useState(false);
 
+  // Dynamic.xyz hooks
+  const { user: dynamicUser, handleLogOut } = useDynamicContext();
+  const isDynamicLoggedIn = useIsLoggedIn();
+  const userWallets = useUserWallets();
+
   useEffect(() => {
     setMounted(true);
   }, []);
 
   const handleLogout = () => {
+    // Logout from both systems
+    if (isDynamicLoggedIn) {
+      handleLogOut();
+    }
     logout();
     window.location.href = '/';
   };
+
+  // Determine if user is authenticated (either traditional or wallet-based)
+  const isUserAuthenticated = isAuthenticated || isDynamicLoggedIn;
 
   return (
     <nav className="bg-white dark:bg-gray-900 border-b">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center space-x-8">
-            <Link href={isAuthenticated ? "/dashboard" : "/"} className="flex items-center space-x-2">
+            <Link href={isUserAuthenticated ? "/dashboard" : "/"} className="flex items-center space-x-2">
               <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-sm">P</span>
               </div>
@@ -74,7 +88,7 @@ export function Navigation() {
               {navigation
                 .filter((item) => {
                   // Hide "Home" when user is authenticated
-                  if (item.href === "/" && isAuthenticated) {
+                  if (item.href === "/" && isUserAuthenticated) {
                     return false;
                   }
                   return true;
@@ -111,22 +125,37 @@ export function Navigation() {
               </div>
             )}
             
-            {isAuthenticated && vendor ? (
+            {isUserAuthenticated ? (
               <div className="flex items-center space-x-3">
-                <div className="flex items-center space-x-2">
-                  <User className="h-4 w-4 text-gray-500" />
-                  <span className="text-sm font-medium">{vendor.name}</span>
-                </div>
+                {/* Show vendor info if traditional auth */}
+                {isAuthenticated && vendor && (
+                  <div className="flex items-center space-x-2">
+                    <User className="h-4 w-4 text-gray-500" />
+                    <span className="text-sm font-medium">{vendor.name}</span>
+                  </div>
+                )}
+                
+                {/* Show wallet info if Dynamic auth */}
+                {isDynamicLoggedIn && dynamicUser && (
+                  <div className="flex items-center space-x-2 text-xs text-gray-500">
+                    <Wallet className="h-3 w-3" />
+                    <span className="font-mono">
+                      {(dynamicUser as any)?.wallets?.[0]?.address?.slice(0, 6)}...
+                      {(dynamicUser as any)?.wallets?.[0]?.address?.slice(-4)}
+                    </span>
+                  </div>
+                )}
+                
                 <Button size="sm" variant="outline" onClick={handleLogout}>
                   <LogOut className="h-4 w-4 mr-1" />
-                  Logout
+                  {isDynamicLoggedIn ? 'Disconnect' : 'Logout'}
                 </Button>
               </div>
             ) : (
               <div className="flex items-center space-x-2">
                 <Link href="/login">
                   <Button size="sm" variant="outline">
-                    Sign In
+                    Connect Wallet
                   </Button>
                 </Link>
                 <Link href="/signup">
