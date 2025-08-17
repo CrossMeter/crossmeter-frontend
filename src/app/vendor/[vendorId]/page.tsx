@@ -157,6 +157,12 @@ export default function VendorDashboardPage() {
           )}
         </div>
         <div className="flex gap-2">
+          <Link href={`/vendor/${vendorId}/products`}>
+            <Button className="bg-black hover:bg-gray-800 text-white">
+              <Package className="h-4 w-4 mr-2" />
+              Product Management
+            </Button>
+          </Link>
           <Button onClick={loadData} variant="outline">
             <RefreshCw className="h-4 w-4 mr-2" />
             Refresh
@@ -216,7 +222,7 @@ export default function VendorDashboardPage() {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Products</CardTitle>
@@ -266,17 +272,6 @@ export default function VendorDashboardPage() {
             <p className="text-xs text-muted-foreground">
               Active recurring
             </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="pt-6">
-            <Link href={`/vendor/${vendorId}/products`}>
-              <Button className="w-full">
-                <Plus className="h-4 w-4 mr-2" />
-                Add Product
-              </Button>
-            </Link>
           </CardContent>
         </Card>
       </div>
