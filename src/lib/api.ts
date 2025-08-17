@@ -20,6 +20,10 @@ import type {
   ClientPaymentRequest,
   ClientPaymentIntent,
   ApiKeyRegenerateResponse,
+  AttestationData,
+  AttestationsResponse,
+  UpdateAttestationStatusRequest,
+  CompleteMintRequest,
 } from './types';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_PROD === 'true' 
@@ -540,6 +544,65 @@ export const clientApi = {
       }
     );
     return response.data;
+  },
+};
+
+// Circle CCTP Attestations API - using local Next.js API routes with Supabase
+export const circleApi = {
+  getPendingAttestations: async (vendorAddress: string, status?: string): Promise<AttestationsResponse> => {
+    const url = new URL('/api/attestations/pending', window.location.origin);
+    url.searchParams.append('vendorAddress', vendorAddress);
+    if (status) {
+      url.searchParams.append('status', status);
+    }
+    
+    const response = await fetch(url.toString());
+    if (!response.ok) {
+      throw new Error(`Failed to fetch attestations: ${response.statusText}`);
+    }
+    return response.json();
+  },
+
+  updateAttestationStatus: async (data: UpdateAttestationStatusRequest): Promise<{ success: boolean }> => {
+    const response = await fetch('/api/attestations/pending', {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Failed to update attestation: ${response.statusText}`);
+    }
+    return response.json();
+  },
+
+  storeAttestation: async (data: {
+    paymentIntentId: string;
+    attestation: string;
+    messageHash: string;
+    originalMessage: string;
+    amount: number;
+    sourceChain: string;
+    destinationChain: string;
+    vendorAddress: string;
+    recipientAddress: string;
+    burnTxHash: string;
+    customerAddress: string;
+  }): Promise<{ success: boolean; attestationId: string }> => {
+    const response = await fetch('/api/attestations/store', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Failed to store attestation: ${response.statusText}`);
+    }
+    return response.json();
   },
 };
 

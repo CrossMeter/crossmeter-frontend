@@ -241,3 +241,64 @@ export interface ClientPaymentIntent {
 export interface ApiKeyRegenerateResponse {
   api_key: string;
 }
+
+// Circle CCTP Types
+export type AttestationStatus = 'pending_mint' | 'minting' | 'minted' | 'failed';
+
+export interface AttestationData {
+  id: string;
+  paymentIntentId: string;
+  attestation: string;          // Circle's cryptographic signature (needed for mint)
+  originalMessage: string;      // Encoded burn message (needed for mint)
+  messageHash: string;
+  amount: number;
+  sourceChain: string;          // e.g., "ethereum"
+  destinationChain: string;     // e.g., "avalanche"
+  vendorAddress: string;
+  customerAddress: string;
+  burnTxHash: string;
+  burnTimestamp: string;
+  status: AttestationStatus;
+  createdAt: string;
+}
+
+export interface AttestationsResponse {
+  success: boolean;
+  attestations: AttestationData[];
+  pagination: { 
+    total: number; 
+    limit: number; 
+    offset: number; 
+    hasMore: boolean; 
+  };
+  summary: { 
+    pending_mint: number; 
+    minting: number; 
+    minted: number; 
+    failed: number; 
+  };
+}
+
+export interface UpdateAttestationStatusRequest {
+  attestationId: string;
+  status: AttestationStatus;
+  mintTxHash?: string;
+}
+
+export interface CompleteMintRequest {
+  attestationId: string;
+  paymentIntentId: string;
+  mintTxHash: string;
+  vendorAddress: string;
+  destinationChainId: number;
+  amount: number;
+  sourceChain: string;
+  destinationChain: string;
+}
+
+export interface CircleChainConfig {
+  chainId: number;
+  name: string;
+  messageTransmitterAddress: string;
+  blockExplorer: string;
+}

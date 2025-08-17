@@ -27,7 +27,8 @@ import {
   ExternalLink,
   RefreshCw,
   Wallet,
-  Globe
+  Globe,
+  CircleDot
 } from "lucide-react";
 import { vendorApi, productApi, paymentIntentApi, subscriptionApi } from "@/lib/api";
 import type { Vendor, Product, PaymentIntent, Subscription } from "@/lib/types";
@@ -157,6 +158,12 @@ export default function VendorDashboardPage() {
           )}
         </div>
         <div className="flex gap-2">
+          <Link href={`/vendor/${vendorId}/circle-payments`}>
+            <Button className="bg-blue-600 hover:bg-blue-700 text-white">
+              <CircleDot className="h-4 w-4 mr-2" />
+              Circle Payments
+            </Button>
+          </Link>
           <Link href={`/vendor/${vendorId}/products`}>
             <Button className="bg-black hover:bg-gray-800 text-white">
               <Package className="h-4 w-4 mr-2" />
@@ -281,6 +288,7 @@ export default function VendorDashboardPage() {
         <TabsList>
           <TabsTrigger value="products">Products</TabsTrigger>
           <TabsTrigger value="payments">Recent Payments</TabsTrigger>
+          <TabsTrigger value="circle">Circle CCTP</TabsTrigger>
           <TabsTrigger value="api-key">API Key</TabsTrigger>
         </TabsList>
         
@@ -478,6 +486,55 @@ export default function VendorDashboardPage() {
                   )}
                 </TableBody>
               </Table>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="circle" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <CircleDot className="h-5 w-5 text-blue-600" />
+                Circle CCTP Overview
+              </CardTitle>
+              <CardDescription>
+                Quick overview of your Cross-Chain Transfer Protocol activity
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="grid gap-4 md:grid-cols-3">
+                  <div className="p-4 border rounded-lg">
+                    <h3 className="font-medium text-sm text-muted-foreground">Pending Mints</h3>
+                    <p className="text-2xl font-bold text-yellow-600">-</p>
+                  </div>
+                  <div className="p-4 border rounded-lg">
+                    <h3 className="font-medium text-sm text-muted-foreground">Total Minted</h3>
+                    <p className="text-2xl font-bold text-green-600">-</p>
+                  </div>
+                  <div className="p-4 border rounded-lg">
+                    <h3 className="font-medium text-sm text-muted-foreground">USDC Volume</h3>
+                    <p className="text-2xl font-bold">$0.00</p>
+                  </div>
+                </div>
+                <div className="flex items-center justify-center py-8 border-2 border-dashed rounded-lg">
+                  <div className="text-center space-y-3">
+                    <CircleDot className="h-12 w-12 mx-auto text-muted-foreground" />
+                    <div>
+                      <h3 className="font-medium">Circle CCTP Integration</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Manage cross-chain USDC minting and attestations
+                      </p>
+                    </div>
+                    <Link href={`/vendor/${vendorId}/circle-payments`}>
+                      <Button className="bg-blue-600 hover:bg-blue-700 text-white">
+                        <CircleDot className="h-4 w-4 mr-2" />
+                        Open Circle Payments
+                      </Button>
+                    </Link>
+                  </div>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
